@@ -1,0 +1,20 @@
+~~ mathlib.lx — importable math utility module
+
+func_begin: factorial(n)
+    maybe: n LT_EQ 1
+        give_back: 1
+    end_maybe:
+    give_back: n * factorial(n - 1)
+func_end:
+
+func_begin: power(base, exp)
+    d_type: long result :: 1
+    loop_from: _p FROM 1 TO exp
+        reassign: result :: result * base
+    end_loop:
+    give_back: result
+func_end:
+
+func_begin: is_even(n)
+    give_back: (n % 2) IS 0
+func_end:
