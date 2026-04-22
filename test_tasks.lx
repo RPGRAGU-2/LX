@@ -1,0 +1,49 @@
+~~ ═══════════════════════════════════════════════════════
+~~ LX 3.0 — Concurrency / Task Test Suite
+~~ ═══════════════════════════════════════════════════════
+
+with_text: "━━━ 1. BASIC TASK ━━━"
+task_begin: worker_a
+    call: task_sleep(50)
+    with_text: "worker_a finished"
+task_end:
+
+task_begin: worker_b
+    call: task_sleep(30)
+    with_text: "worker_b finished"
+task_end:
+
+~~ Give tasks time to run
+call: task_sleep(200)
+with_text: "main thread continues"
+
+with_text: ""
+with_text: "━━━ 2. TASK WRITING TO FILE ━━━"
+d_type: string  logfile :: "/tmp/lx_task_log.txt"
+call: file_write(logfile, "")
+
+task_begin: file_writer
+    call: task_sleep(20)
+    call: file_append("/tmp/lx_task_log.txt", "task wrote this\n")
+task_end:
+
+call: task_sleep(150)
+d_type: string  logged :: file_read(logfile)
+with_text_raw: "logged: "
+with_text: str_trim(logged)
+
+with_text: ""
+with_text: "━━━ 3. MULTIPLE CONCURRENT TASKS ━━━"
+loop_from: t FROM 1 TO 3
+    task_begin: multi_task
+        call: task_sleep(40)
+        with_text_raw: "task "
+        with_text: "done"
+    task_end:
+end_loop:
+call: task_sleep(250)
+with_text: "all tasks finished"
+
+with_text: ""
+with_text: "━━━ ALL TASK TESTS PASSED ━━━"
+halt_now:

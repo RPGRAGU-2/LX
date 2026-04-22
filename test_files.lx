@@ -1,0 +1,94 @@
+~~ ═══════════════════════════════════════════════════════
+~~ LX 3.0 — File I/O + JSON Test Suite
+~~ ═══════════════════════════════════════════════════════
+
+with_text: "━━━ 1. FILE WRITE + READ ━━━"
+d_type: string  path :: "/tmp/lx_test.txt"
+call: file_write(path, "Hello from LX 3.0!\nLine two\nLine three\n")
+with_text_raw: "file_exists: "
+with_text: file_exists(path)
+
+d_type: string  content :: file_read(path)
+with_text_raw: "read back: "
+with_text: content
+
+with_text: ""
+with_text: "━━━ 2. FILE APPEND ━━━"
+call: file_append(path, "Appended line\n")
+d_type: string  content2 :: file_read(path)
+with_text: content2
+
+with_text: ""
+with_text: "━━━ 3. FILE LINES ━━━"
+d_type: list  lines :: file_lines(path)
+with_text_raw: "line count: "
+with_text: len(lines)
+loop_each: ln IN lines
+    maybe: len(ln) GT 0
+        with_text_raw: "  >> "
+        with_text: ln
+    end_maybe:
+end_loop:
+
+with_text: ""
+with_text: "━━━ 4. FILE NOT FOUND ERROR ━━━"
+attempt
+    d_type: string  bad :: file_read("/tmp/does_not_exist_lx.txt")
+    with_text: bad
+catch_err (e)
+    with_text_raw: "caught IOError: "
+    with_text: e
+end_attempt
+
+with_text: ""
+with_text: "━━━ 5. JSON STRINGIFY ━━━"
+d_type: map   person :: {"name" :: "Ada", "age" :: "36", "active" :: "VERUM"}
+d_type: list  scores :: [95, 87, 92, 78]
+d_type: string  j1 :: json_str(person)
+d_type: string  j2 :: json_str(scores)
+with_text: j1
+with_text: j2
+with_text: json_str("hello world")
+with_text: json_str(42)
+with_text: json_str(VERUM)
+
+with_text: ""
+with_text: "━━━ 6. JSON PARSE ━━━"
+d_type: string  jsrc :: "{\"name\":\"LX\",\"version\":3,\"cool\":true,\"tags\":[\"fast\",\"weird\"]}"
+d_type: map  parsed :: json_parse(jsrc)
+with_text_raw: "name:    "
+with_text: parsed["name"]
+with_text_raw: "version: "
+with_text: parsed["version"]
+with_text_raw: "cool:    "
+with_text: parsed["cool"]
+with_text_raw: "tags:    "
+with_text: parsed["tags"]
+
+with_text: ""
+with_text: "━━━ 7. JSON ROUNDTRIP ━━━"
+d_type: list  data :: [1, 2, 3, {"x" :: "10", "y" :: "20"}]
+d_type: string  serialized :: json_str(data)
+with_text_raw: "serialized: "
+with_text: serialized
+d_type: list  restored :: json_parse(serialized)
+with_text_raw: "restored[0]: "
+with_text: restored[0]
+with_text_raw: "restored len: "
+with_text: len(restored)
+
+with_text: ""
+with_text: "━━━ 8. WRITE / READ JSON FILE ━━━"
+d_type: map  config :: {"host" :: "localhost", "port" :: "8080", "debug" :: "VERUM"}
+d_type: string  cfgPath :: "/tmp/lx_config.json"
+call: file_write(cfgPath, json_str(config))
+d_type: string  cfgRaw :: file_read(cfgPath)
+d_type: map  cfgLoaded :: json_parse(cfgRaw)
+with_text_raw: "host: "
+with_text: cfgLoaded["host"]
+with_text_raw: "port: "
+with_text: cfgLoaded["port"]
+
+with_text: ""
+with_text: "━━━ ALL FILE / JSON TESTS PASSED ━━━"
+halt_now:

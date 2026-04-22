@@ -1,0 +1,151 @@
+~~ ═══════════════════════════════════════════════════════
+~~ LX 3.0 — OOP Test Suite
+~~ ═══════════════════════════════════════════════════════
+
+with_text: "━━━ 1. BLUEPRINT: Animal ━━━"
+
+blueprint_begin: Animal
+    init_begin: (name, sound)
+        reassign: self.name  :: name
+        reassign: self.sound :: sound
+        reassign: self.alive :: VERUM
+    init_end:
+
+    method_begin: speak()
+        with_text_raw: self.name
+        with_text_raw: " says: "
+        with_text: self.sound
+    method_end:
+
+    method_begin: describe()
+        with_text_raw: "Animal["
+        with_text_raw: self.name
+        with_text_raw: "] alive="
+        with_text: self.alive
+    method_end:
+
+    method_begin: get_name()
+        give_back: self.name
+    method_end:
+blueprint_end:
+
+d_type: object  dog  :: new_obj: Animal("Rex", "Woof!")
+d_type: object  cat  :: new_obj: Animal("Whiskers", "Meow~")
+
+call: dog.speak()
+call: cat.speak()
+call: dog.describe()
+
+with_text_raw: "dog name: "
+d_type: string  dname :: dog.get_name()
+with_text: dname
+
+~~ ─── 2. INHERITANCE ────────────────────────────────────
+with_text: ""
+with_text: "━━━ 2. INHERITANCE: Dog extends Animal ━━━"
+
+blueprint_begin: Dog
+    inherits: Animal
+    init_begin: (name, breed)
+        reassign: self.name  :: name
+        reassign: self.sound :: "Woof! Woof!"
+        reassign: self.alive :: VERUM
+        reassign: self.breed :: breed
+        reassign: self.tricks :: []
+    init_end:
+
+    method_begin: learn_trick(trick)
+        call: list_push(self.tricks, trick)
+        with_text_raw: self.name
+        with_text_raw: " learned: "
+        with_text: trick
+    method_end:
+
+    method_begin: show_tricks()
+        with_text_raw: self.name
+        with_text_raw: "'s tricks: "
+        with_text: self.tricks
+    method_end:
+
+    method_begin: describe()
+        with_text_raw: "Dog["
+        with_text_raw: self.name
+        with_text_raw: " | breed="
+        with_text_raw: self.breed
+        with_text: "]"
+    method_end:
+blueprint_end:
+
+d_type: object  buddy :: new_obj: Dog("Buddy", "Golden Retriever")
+call: buddy.speak()
+call: buddy.describe()
+call: buddy.learn_trick("sit")
+call: buddy.learn_trick("shake")
+call: buddy.learn_trick("roll over")
+call: buddy.show_tricks()
+
+~~ ─── 3. BLUEPRINT WITH METHODS RETURNING VALUES ────────
+with_text: ""
+with_text: "━━━ 3. BLUEPRINT: Counter ━━━"
+
+blueprint_begin: Counter
+    init_begin: (start)
+        reassign: self.value :: start
+        reassign: self.step  :: 1
+    init_end:
+
+    method_begin: set_step(s)
+        reassign: self.step :: s
+    method_end:
+
+    method_begin: increment()
+        reassign: self.value :: self.value + self.step
+    method_end:
+
+    method_begin: decrement()
+        reassign: self.value :: self.value - self.step
+    method_end:
+
+    method_begin: reset()
+        reassign: self.value :: 0
+    method_end:
+
+    method_begin: get()
+        give_back: self.value
+    method_end:
+
+    method_begin: to_string()
+        give_back: "Counter(" + str(self.value) + ")"
+    method_end:
+blueprint_end:
+
+d_type: object  ctr :: new_obj: Counter(0)
+call: ctr.set_step(5)
+call: ctr.increment()
+call: ctr.increment()
+call: ctr.increment()
+d_type: long  cval :: ctr.get()
+with_text_raw: "Counter after 3 increments (+5 each): "
+with_text: cval
+call: ctr.decrement()
+with_text_raw: "After decrement: "
+with_text: ctr.get()
+with_text: ctr.to_string()
+
+~~ ─── 4. MULTIPLE OBJECTS OF SAME BLUEPRINT ─────────────
+with_text: ""
+with_text: "━━━ 4. COLLECTION OF OBJECTS ━━━"
+
+d_type: list  animals :: []
+call: list_push(animals, new_obj: Animal("Lion",  "ROAR"))
+call: list_push(animals, new_obj: Animal("Snake", "Hisss"))
+call: list_push(animals, new_obj: Animal("Duck",  "Quack"))
+call: list_push(animals, new_obj: Dog("Fido", "Poodle"))
+
+loop_each: a IN animals
+    call: a.speak()
+end_loop:
+
+with_text: ""
+with_text: "━━━ OOP TESTS COMPLETE ━━━"
+halt_now:

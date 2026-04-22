@@ -1,0 +1,154 @@
+~~ ═══════════════════════════════════════════════════════
+~~ LX 3.0 — Error Handling Test Suite
+~~ ═══════════════════════════════════════════════════════
+
+with_text: "━━━ 1. BASIC TRY / CATCH ━━━"
+attempt
+    with_text: "inside try block"
+    throw_err: "oops, something broke"
+    with_text: "SHOULD NOT PRINT"
+catch_err (e)
+    with_text_raw: "caught: "
+    with_text: e
+end_attempt
+
+with_text: ""
+with_text: "━━━ 2. NO ERROR PATH ━━━"
+attempt
+    d_type: long  x :: 10 + 5
+    with_text_raw: "result: "
+    with_text: x
+catch_err (e)
+    with_text: "SHOULD NOT PRINT"
+end_attempt
+
+with_text: ""
+with_text: "━━━ 3. NESTED TRY / CATCH ━━━"
+attempt
+    with_text: "outer try"
+    attempt
+        with_text: "inner try"
+        throw_err: "inner error"
+    catch_err (inner_e)
+        with_text_raw: "inner caught: "
+        with_text: inner_e
+    end_attempt
+    with_text: "outer try continues after inner catch"
+catch_err (outer_e)
+    with_text: "OUTER SHOULD NOT CATCH"
+end_attempt
+
+with_text: ""
+with_text: "━━━ 4. ERROR BUBBLING ━━━"
+attempt
+    with_text: "about to call risky func"
+    d_type: long  result :: risky_divide(10, 0)
+    with_text: result
+catch_err (e)
+    with_text_raw: "bubbled up: "
+    with_text: e
+end_attempt
+
+with_text: ""
+with_text: "━━━ 5. THROW NON-STRING ━━━"
+attempt
+    throw_err: 42
+catch_err (e)
+    with_text_raw: "caught number error: "
+    with_text: e
+end_attempt
+
+attempt
+    throw_err: VERUM
+catch_err (e)
+    with_text_raw: "caught bool error: "
+    with_text: e
+end_attempt
+
+with_text: ""
+with_text: "━━━ 6. CATCH IN LOOP ━━━"
+d_type: list  results :: []
+loop_from: i FROM 1 TO 5
+    attempt
+        maybe: i IS 3
+            throw_err: "skipped 3"
+        end_maybe:
+        call: list_push(results, i)
+    catch_err (e)
+        call: list_push(results, "ERR")
+    end_attempt
+end_loop:
+with_text: results
+
+with_text: ""
+with_text: "━━━ 7. TRY IN FUNCTION ━━━"
+d_type: string  r1 :: safe_sqrt(16)
+d_type: string  r2 :: safe_sqrt(-1)
+with_text_raw: "sqrt(16):  "
+with_text: r1
+with_text_raw: "sqrt(-1):  "
+with_text: r2
+
+with_text: ""
+with_text: "━━━ 8. ERROR OBJECT IN BLUEPRINT ━━━"
+d_type: object  bank :: new_obj: BankAccount(100)
+call: bank.deposit(50)
+call: bank.withdraw(30)
+with_text_raw: "balance: "
+with_text: bank.get_balance()
+attempt
+    call: bank.withdraw(200)
+catch_err (e)
+    with_text_raw: "bank error: "
+    with_text: e
+end_attempt
+with_text_raw: "balance after failed withdrawal: "
+with_text: bank.get_balance()
+
+with_text: ""
+with_text: "━━━ ALL ERROR TESTS PASSED ━━━"
+halt_now:
+
+~~ ── Function definitions ──────────────────────────────
+
+func_begin: risky_divide(a, b)
+    maybe: b IS 0
+        throw_err: "DivisionError: divide by zero"
+    end_maybe:
+    give_back: a / b
+func_end:
+
+func_begin: safe_sqrt(n)
+    attempt
+        maybe: n LT 0
+            throw_err: "MathError: negative sqrt"
+        end_maybe:
+        give_back: str(sqrt(n))
+    catch_err (e)
+        give_back: "Error: " + e
+    end_attempt
+func_end:
+
+blueprint_begin: BankAccount
+    init_begin: (initial)
+        reassign: self.balance :: initial
+    init_end:
+
+    method_begin: deposit(amount)
+        maybe: amount LT_EQ 0
+            throw_err: "DepositError: amount must be positive"
+        end_maybe:
+        reassign: self.balance :: self.balance + amount
+    method_end:
+
+    method_begin: withdraw(amount)
+        maybe: amount GT self.balance
+            throw_err: "InsufficientFunds: cannot withdraw " + str(amount)
+        end_maybe:
+        reassign: self.balance :: self.balance - amount
+    method_end:
+
+    method_begin: get_balance()
+        give_back: self.balance
+    method_end:
+blueprint_end:
